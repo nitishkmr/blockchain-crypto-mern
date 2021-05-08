@@ -1,5 +1,6 @@
 const crypto = require('crypto');
 
+// to return an SHA256 hash (should not depend on the order of the arguments)
 const cryptoHash = (...inputs) => {
   //...inputs will gather all the inputs in a singe array
   const hash = crypto.createHash('sha256');

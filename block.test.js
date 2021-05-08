@@ -2,6 +2,7 @@
 // "test": "jest --watchAll" in package.json and npm run test to run the test
 const Block = require('./block');
 const { GENESIS_DATA } = require('./config');
+const cryptoHash = require('./crypto-hash');
 
 //test for a block
 describe('Block', () => {
@@ -44,7 +45,7 @@ describe('Block', () => {
   describe('mineBlock()', () => {
     const lastBlock = Block.genesis();
     const data = 'mined data';
-    const minedBlock = Block.mineBlock(lastBlock, data); //again a static function
+    const minedBlock = Block.mineBlock({ lastBlock, data }); //again a static function
 
     it('returns a Block instance', () => {
       expect(minedBlock instanceof Block).toBe(true);
@@ -60,6 +61,12 @@ describe('Block', () => {
 
     it('sets a `timestamp`', () => {
       expect(minedBlock.timestamp).not.toEqual(undefined);
+    });
+
+    it('creates a SHA-256 `hash` based onthe proper inputs', () => {
+      expect(minedBlock.hash).toEqual(
+        cryptoHash(minedBlock.timestamp, lastBlock.hash, data)
+      );
     });
   });
 });
