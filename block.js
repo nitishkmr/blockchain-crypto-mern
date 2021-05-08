@@ -1,3 +1,5 @@
+const { GENESIS_DATA } = require('./config');
+
 class Block {
   constructor({ timestamp, lastHash, hash, data }) {
     //{} is used so that later, order of the arguments won't bother
@@ -5,6 +7,11 @@ class Block {
     this.lastHash = lastHash;
     this.hash = hash;
     this.data = data;
+  }
+
+  static genesis() {
+    // return new this(GENESIS_DATA);
+    return new Block(GENESIS_DATA);
   }
 }
 
