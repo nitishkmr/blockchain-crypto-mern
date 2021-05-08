@@ -13,6 +13,14 @@ class Block {
     // return new this(GENESIS_DATA);
     return new Block(GENESIS_DATA);
   }
+
+  static mineBlock(lastBlock, data) {
+    return new this({
+      timestamp: Date.now(),
+      lastHash: lastBlock.hash,
+      data: data,
+    });
+  }
 }
 
 // const block1 = new Block({
