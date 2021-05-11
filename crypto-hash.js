@@ -8,4 +8,7 @@ const cryptoHash = (...inputs) => {
   return hash.digest('hex'); //digest represents the result of hash - here in hex format
 };
 
+// Difficulty level will be increased if using binary as initially difficulty = 1 is set
+// i.e. starting from only one leading 0, easy to compute
+
 module.exports = cryptoHash;

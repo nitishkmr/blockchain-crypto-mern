@@ -3,6 +3,7 @@
 const Block = require('./block');
 const { GENESIS_DATA, MINE_RATE } = require('./config');
 const cryptoHash = require('./crypto-hash');
+const hexToBinary = require('hex-to-binary'); // since Bitcoin uses binary format to form proof of work hashes
 
 //test for a block
 describe('Block', () => {
@@ -83,9 +84,9 @@ describe('Block', () => {
 
     // like Hashcash system -> the generated hash for this block must have leading number of 0s that matches it's set difficulty.
     it('sets a `hash` that matches the difficulty criteria', () => {
-      expect(minedBlock.hash.substring(0, minedBlock.difficulty)).toEqual(
-        '0'.repeat(minedBlock.difficulty)
-      );
+      expect(
+        hexToBinary(minedBlock.hash).substring(0, minedBlock.difficulty)
+      ).toEqual('0'.repeat(minedBlock.difficulty));
     });
 
     it('adjusts the difficulty', () => {
