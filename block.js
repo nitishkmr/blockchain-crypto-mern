@@ -1,4 +1,4 @@
-const { GENESIS_DATA } = require('./config');
+const { GENESIS_DATA, MINE_RATE } = require('./config');
 const cryptoHash = require('./crypto-hash');
 
 class Block {
@@ -18,16 +18,19 @@ class Block {
   }
 
   static mineBlock({ lastBlock, data }) {
-    let hash, timestamp;
-    // const timestamp = Date.now();
     const lastHash = lastBlock.hash;
-    const { difficulty } = lastBlock; // refer to the difficulty of the last mined block... ultimately going to the Genesis Block
-
+    let hash, timestamp;
+    let { difficulty } = lastBlock; // refer to the difficulty of the last mined block... ultimately going to the Genesis Block
     let nonce = 0;
+
     do {
       // loop for changing nonce and recalculating hash
       nonce++;
       timestamp = Date.now();
+      difficulty = Block.adjustDifficulty({
+        originalBlock: lastBlock,
+        newBlockTimestamp: timestamp,
+      });
       hash = cryptoHash(timestamp, lastHash, data, nonce, difficulty);
     } while (hash.substring(0, difficulty) !== '0'.repeat(difficulty));
 
@@ -39,6 +42,16 @@ class Block {
       nonce,
       hash,
     });
+  }
+
+  static adjustDifficulty({ originalBlock, newBlockTimestamp }) {
+    const { difficulty } = originalBlock;
+    if (difficulty < 1) return 1;
+
+    const difference = newBlockTimestamp - originalBlock.timestamp;
+    // console.log(difference);
+    if (difference > MINE_RATE) return difficulty - 1; // => slpw mining
+    return difficulty + 1; // quick mining
   }
 }
 

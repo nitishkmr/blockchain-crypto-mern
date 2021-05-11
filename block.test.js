@@ -1,12 +1,12 @@
 // for jest
 // "test": "jest --watchAll" in package.json and npm run test to run the test
 const Block = require('./block');
-const { GENESIS_DATA } = require('./config');
+const { GENESIS_DATA, MINE_RATE } = require('./config');
 const cryptoHash = require('./crypto-hash');
 
 //test for a block
 describe('Block', () => {
-  const timestamp = 'a-date';
+  const timestamp = 2000;
   const lastHash = 'foo-hash';
   const hash = 'bar-hash';
   const data = ['blockchain', 'data'];
@@ -86,6 +86,41 @@ describe('Block', () => {
       expect(minedBlock.hash.substring(0, minedBlock.difficulty)).toEqual(
         '0'.repeat(minedBlock.difficulty)
       );
+    });
+
+    it('adjusts the difficulty', () => {
+      const possibleResults = [
+        lastBlock.difficulty + 1,
+        lastBlock.difficulty - 1,
+      ];
+
+      expect(possibleResults.includes(minedBlock.difficulty)).toBe(true);
+    });
+  });
+
+  describe('adjustDifficulty()', () => {
+    it('raises the difficulty for a quickly mined block', () => {
+      expect(
+        Block.adjustDifficulty({
+          //here timestamp is of the new block
+          originalBlock: block,
+          newBlockTimestamp: block.timestamp + MINE_RATE - 100, // obv, ourselves generating the timestamp of the new block such that it mines quickly. Therefore MINE_RATE - 100
+        })
+      ).toEqual(block.difficulty + 1);
+    });
+
+    it('lowers the difficulty for a slowly mined block', () => {
+      expect(
+        Block.adjustDifficulty({
+          originalBlock: block,
+          newBlockTimestamp: block.timestamp + MINE_RATE + 100,
+        })
+      ).toEqual(block.difficulty - 1);
+    });
+
+    it('has a lower limit of 1', () => {
+      block.difficulty = -1;
+      expect(Block.adjustDifficulty({ originalBlock: block })).toEqual(1);
     });
   });
 });
