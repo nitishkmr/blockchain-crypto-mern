@@ -10,12 +10,16 @@ describe('Block', () => {
   const lastHash = 'foo-hash';
   const hash = 'bar-hash';
   const data = ['blockchain', 'data'];
+  const nonce = 1;
+  const difficulty = 1;
 
   const block = new Block({
     timestamp, // timestamp : timestamp
     lastHash: lastHash,
     hash: hash,
     data: data,
+    nonce,
+    difficulty,
   });
 
   test('has a timestamp, lastHash, hash, and data property', () => {
@@ -23,6 +27,8 @@ describe('Block', () => {
     expect(block.lastHash).toEqual(lastHash);
     expect(block.hash).toEqual(hash);
     expect(block.data).toEqual(data);
+    expect(block.nonce).toEqual(nonce);
+    expect(block.difficulty).toEqual(difficulty);
   });
 
   // test for genesis function - genesis() - describe to kinda combine the tests related to genesis block
@@ -63,9 +69,22 @@ describe('Block', () => {
       expect(minedBlock.timestamp).not.toEqual(undefined);
     });
 
-    it('creates a SHA-256 `hash` based onthe proper inputs', () => {
+    it('creates a SHA-256 `hash` based on the proper inputs', () => {
       expect(minedBlock.hash).toEqual(
-        cryptoHash(minedBlock.timestamp, lastBlock.hash, data)
+        cryptoHash(
+          minedBlock.timestamp,
+          lastBlock.hash,
+          data,
+          minedBlock.nonce,
+          minedBlock.difficulty
+        )
+      );
+    });
+
+    // like Hashcash system -> the generated hash for this block must have leading number of 0s that matches it's set difficulty.
+    it('sets a `hash` that matches the difficulty criteria', () => {
+      expect(minedBlock.hash.substring(0, minedBlock.difficulty)).toEqual(
+        '0'.repeat(minedBlock.difficulty)
       );
     });
   });
