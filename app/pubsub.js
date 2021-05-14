@@ -36,7 +36,13 @@ class PubSub {
 
   publish({ channel, message }) {
     // just a wrapper so that doesn't depend on the order of parameters
-    this.publisher.publish(channel, message);
+
+    // 3 step process is used below to avoid sending the publish msg to itself, so temporarily unsubscribing from the channel, sending the msg, then resubs.
+    this.subscriber.unsubscribe(channel, () => {
+      this.publisher.publish(channel, message, () => {
+        this.publisher.subscribe(channel);
+      });
+    });
   }
 
   broadcastChain() {

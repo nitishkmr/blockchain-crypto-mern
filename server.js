@@ -1,7 +1,7 @@
 const express = require('express');
 const request = require('request');
 const Blockchain = require('./blockchain');
-const PubSub = require('./pubsub');
+const PubSub = require('./app/pubsub');
 
 const app = express();
 const blockchain = new Blockchain();
@@ -10,8 +10,6 @@ app.use(express.json());
 
 const DEFAULT_PORT = 3000;
 const ROOT_NODE_ADDRESS = `http://localhost:${DEFAULT_PORT}`;
-
-setTimeout(() => pubSub.broadcastChain(), 1000); // will publish on a channel
 
 // @desc Fetch the chain
 // @route GET/api/blocks
@@ -57,5 +55,8 @@ if (process.env.GENERATE_PEER_PORT === 'true') {
 const PORT = PEER_PORT || DEFAULT_PORT;
 app.listen(PORT, () => {
   console.log(`Server running on PORT ${PORT}`);
-  syncChains();
+
+  if (PORT !== DEFAULT_PORT) {
+    syncChains();
+  }
 });

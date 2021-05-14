@@ -1,8 +1,8 @@
 // for jest
 // "test": "jest --watchAll" in package.json and npm run test to run the test
 const Block = require('./block');
-const { GENESIS_DATA, MINE_RATE } = require('./config');
-const cryptoHash = require('./crypto-hash');
+const { GENESIS_DATA, MINE_RATE } = require('../config');
+const cryptoHash = require('../util/crypto-hash');
 const hexToBinary = require('hex-to-binary'); // since Bitcoin uses binary format to form proof of work hashes
 
 //test for a block

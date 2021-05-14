@@ -1,4 +1,4 @@
-const Blockchain = require('./blockchain');
+const Blockchain = require('../blockchain');
 const blockchain = new Blockchain();
 
 blockchain.addBlock({ data: 'initial' }); // as Genesis will be there by default but it's timestamp is set to 1 i.e. in 1970
