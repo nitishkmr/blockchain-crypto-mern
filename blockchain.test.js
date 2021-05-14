@@ -1,5 +1,6 @@
 const Blockchain = require('./blockchain');
 const Block = require('./block');
+const cryptoHash = require('./crypto-hash');
 
 describe('Blockchain', () => {
   let blockchain, newChain, originalChain;
@@ -44,6 +45,7 @@ describe('Blockchain', () => {
         blockchain.addBlock({ data: 'Batman' });
         blockchain.addBlock({ data: 'Wayne' });
       });
+
       describe('and a lastHash reference has changed', () => {
         it('returns false', () => {
           // blockchain.addBlock({ data: 'Bruce' });
@@ -62,6 +64,30 @@ describe('Blockchain', () => {
           // blockchain.addBlock({ data: 'Wayne' });
 
           blockchain.chain[2].data = 'broken-data';
+          expect(Blockchain.isValidChain(blockchain.chain)).toBe(false);
+        });
+      });
+
+      describe('and the chain contains a block with a jumped difficulty', () => {
+        it('returns false', () => {
+          const lastBlock = blockchain.chain[blockchain.chain.length - 1];
+          const lastHash = lastBlock.hash;
+          const timestamp = Date.now();
+          const nonce = 0;
+          const data = [];
+          const difficulty = lastBlock.difficulty - 3; // here setting up low difficulty, so it will be easier for an attacker to mine this block.
+          const hash = cryptoHash(timestamp, lastHash, data, nonce, difficulty);
+
+          const badBlock = new Block({
+            timestamp,
+            lastHash,
+            difficulty,
+            nonce,
+            data,
+            hash,
+          });
+
+          blockchain.chain.push(badBlock);
           expect(Blockchain.isValidChain(blockchain.chain)).toBe(false);
         });
       });
