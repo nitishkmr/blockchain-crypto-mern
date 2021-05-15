@@ -9,6 +9,7 @@ class Wallet {
 
     this.publicKey = this.keyPair.getPublic().encode('hex'); //without encode, it will return value in terms of x,y coordinates
   }
+
   sign(data) {
     return this.keyPair.sign(cryptoHash(data));
   }

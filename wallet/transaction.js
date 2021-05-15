@@ -1,6 +1,10 @@
 const uuid = require('uuid');
 const { verifySignature } = require('../util');
 
+// Transactions – Objects [  ] that capture the info behind the exchange of currency between two individuals in the. Only wallet should be able to create txs.
+//          Input field – Provides details about the sender, contains the timestamp, balance, amount to be sent, signature and the sender’s public key
+//          Output field – How much currency the sender wants to send, an output is also sent to the sender themselves to specify how much currency should the sender have after the tx.
+
 class Transaction {
   constructor({ senderWallet, recipientKey, amount }) {
     this.id = uuid.v1();
@@ -28,6 +32,15 @@ class Transaction {
       address: senderWallet.publicKey, // the address is the public key in these txs
       signature: senderWallet.sign(outputMap),
     };
+  }
+
+  update({ senderWallet, recipientKey, amount }) {
+    this.outputMap[recipientKey] = amount;
+
+    let currBalance = this.outputMap[senderWallet.publicKey];
+    this.outputMap[senderWallet.publicKey] = currBalance - amount;
+
+    this.input = this.createInput({ senderWallet, outputMap: this.outputMap });
   }
 
   static validTransaction(transaction) {
