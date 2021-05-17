@@ -69,13 +69,21 @@ app.get('/api/transaction-pool-map', (req, res) => {
 
 // to check if there's already an existing chain then this function will be used to sync with it.
 // Eg. first npm run dev (root node) is done -> some blocks are mined -> npm run dev-peer is run, then at root node, chain will already be there.
-const syncChains = () => {
+const syncWithRootState = () => {
   request({ url: `${ROOT_NODE_ADDRESS}/api/blocks` } /*GET req*/, (error, response, body) => {
     if (!error && response.statusCode === 200) {
       const rootChain = JSON.parse(body); // body contains stringified data
 
       console.log('replace chain on a sync with', rootChain);
       blockchain.replaceChain(rootChain);
+    }
+  });
+  request({ url: `${ROOT_NODE_ADDRESS}/api/transaction-pool-map` }, (error, response, body) => {
+    if (!error && response.statusCode === 200) {
+      const rootTransactionPoolMap = JSON.parse(body);
+
+      console.log('replace transaction pool map on a sync with', rootTransactionPoolMap);
+      transactionPool.setMap(rootTransactionPoolMap);
     }
   });
 };
@@ -93,6 +101,6 @@ app.listen(PORT, () => {
   console.log(`Server running on PORT ${PORT}`);
 
   if (PORT !== DEFAULT_PORT) {
-    syncChains();
+    syncWithRootState();
   }
 });
