@@ -1,5 +1,6 @@
 // Each run server will act like a root and a formation of new blockchain
-// Also, for the most part -> recipient === recipientKey
+// Wallet, Blockchain etc all will be init here
+// Also, for the whole app -> recipient === recipientKey
 const express = require('express');
 const request = require('request');
 const Blockchain = require('./blockchain');
@@ -39,13 +40,37 @@ app.post('/api/mine', (req, res) => {
 // @access Public(no token req)
 app.post('/api/transact', (req, res) => {
   const { amount, recipient } = req.body;
-  const transaction = wallet.createTransaction({
-    recipient,
-    amount,
-  });
-  transactionPool.setTransaction(transaction);
-  console.log('transactionPool', transactionPool);
-  res.json({ transaction });
+
+  try {
+    let transaction = transactionPool.existingTransaction({
+      inputAddress: wallet.publicKey,
+    });
+
+    if (transaction) {
+      // just update, if already a transaction from the sender is in the pool.
+      transaction.update({
+        senderWallet: wallet,
+        recipientKey: recipient, // rem-for the whole app-recipient === recipientKey
+        amount,
+      });
+    } else {
+      transaction = wallet.createTransaction({
+        recipient,
+        amount,
+      });
+    }
+    transactionPool.setTransaction(transaction);
+    res.json({ type: 'success', transaction });
+  } catch (err) {
+    res.status(400).json({ type: 'error', message: err.message });
+  }
+});
+
+// @desc To get the transactionMap from transaction pool
+// @route GET/api/transaction-pool-map
+// @access Public(no token req)
+app.get('/api/transaction-pool-map', (req, res) => {
+  res.json(transactionPool.transactionMap);
 });
 
 // to check if there's already an existing chain then this function will be used to sync with it.
