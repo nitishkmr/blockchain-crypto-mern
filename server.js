@@ -12,7 +12,7 @@ const app = express();
 const blockchain = new Blockchain();
 const wallet = new Wallet();
 const transactionPool = new TransactionPool();
-const pubSub = new PubSub(blockchain);
+const pubSub = new PubSub(blockchain, transactionPool);
 app.use(express.json());
 
 const DEFAULT_PORT = 3000;
@@ -31,7 +31,7 @@ app.get('/api/blocks', (req, res) => {
 app.post('/api/mine', (req, res) => {
   const { data } = req.body;
   blockchain.addBlock({ data });
-  pubSub.broadcastChain(); // to broadcase whenever new block is mined
+  pubSub.broadcastChain(); // to broadcast whenever new block is mined
   res.redirect('/api/blocks');
 });
 
@@ -48,21 +48,15 @@ app.post('/api/transact', (req, res) => {
 
     if (transaction) {
       // just update, if already a transaction from the sender is in the pool.
-      transaction.update({
-        senderWallet: wallet,
-        recipientKey: recipient, // rem-for the whole app-recipient === recipientKey
-        amount,
-      });
+      transaction.update({ senderWallet: wallet, recipientKey: recipient, amount }); // for the whole app, recipientKey===recipient
     } else {
-      transaction = wallet.createTransaction({
-        recipient,
-        amount,
-      });
+      transaction = wallet.createTransaction({ recipient, amount });
     }
     transactionPool.setTransaction(transaction);
+    pubSub.broadcastTransaction(transaction); // to broadcast whenever new transaction is done/updated
     res.json({ type: 'success', transaction });
   } catch (err) {
-    res.status(400).json({ type: 'error', message: err.message });
+    return res.status(400).json({ type: 'error', message: err.message });
   }
 });
 
@@ -76,17 +70,14 @@ app.get('/api/transaction-pool-map', (req, res) => {
 // to check if there's already an existing chain then this function will be used to sync with it.
 // Eg. first npm run dev (root node) is done -> some blocks are mined -> npm run dev-peer is run, then at root node, chain will already be there.
 const syncChains = () => {
-  request(
-    { url: `${ROOT_NODE_ADDRESS}/api/blocks` } /*GET req*/,
-    (error, response, body) => {
-      if (!error && response.statusCode === 200) {
-        const rootChain = JSON.parse(body); // body contains stringified data
+  request({ url: `${ROOT_NODE_ADDRESS}/api/blocks` } /*GET req*/, (error, response, body) => {
+    if (!error && response.statusCode === 200) {
+      const rootChain = JSON.parse(body); // body contains stringified data
 
-        console.log('replace chain on a sync with', rootChain);
-        blockchain.replaceChain(rootChain);
-      }
+      console.log('replace chain on a sync with', rootChain);
+      blockchain.replaceChain(rootChain);
     }
-  );
+  });
 };
 
 // here multiple ports are needed to different blockchain servers/channels can be run simultaneously

@@ -3,15 +3,18 @@ const redis = require('redis');
 const CHANNELS = {
   TEST: 'TEST',
   BLOCKCHAIN: 'BLOCKCHAIN',
+  TRANSACTION: 'TRANSACTION',
 };
 
 class PubSub {
-  constructor(blockchain) {
+  constructor(blockchain, transactionPool) {
     this.blockchain = blockchain;
+    this.transactionPool = transactionPool;
+
     this.publisher = redis.createClient();
     this.subscriber = redis.createClient();
 
-    // here, the subscriber will be subscribed to the TEST channel
+    // here, the subscriber will be subscribed to all the channels
     this.subscribeToChannels();
 
     // here the subscriber will actually handle incoming messages -> like a listener function
@@ -22,21 +25,31 @@ class PubSub {
 
   handleMessage(channel, message) {
     console.log(`Message received. Channel: ${channel}. Message: ${message}.`);
+
     const parsedMessage = JSON.parse(message);
-    if (channel === CHANNELS.BLOCKCHAIN) {
-      this.blockchain.replaceChain(parsedMessage);
+
+    switch (channel) {
+      case CHANNELS.BLOCKCHAIN:
+        this.blockchain.replaceChain(parsedMessage);
+        break;
+
+      case CHANNELS.TRANSACTION:
+        this.transactionPool.setTransaction(parsedMessage);
+        break;
+      default:
+        break;
     }
   }
 
+  // will subsribe the current server.js instance to all the CHANNELS defined
   subscribeToChannels() {
     Object.values(CHANNELS).forEach((channel) => {
       this.subscriber.subscribe(channel);
     });
   }
 
+  // just a wrapper so that doesn't depend on the order of parameters
   publish({ channel, message }) {
-    // just a wrapper so that doesn't depend on the order of parameters
-
     // 3 step process is used below to avoid sending the publish msg to itself, so temporarily unsubscribing from the channel, sending the msg, then resubs.
     this.subscriber.unsubscribe(channel, () => {
       this.publisher.publish(channel, message, () => {
@@ -49,6 +62,13 @@ class PubSub {
     this.publish({
       channel: CHANNELS.BLOCKCHAIN,
       message: JSON.stringify(this.blockchain.chain), // as only strings can be used as a message
+    });
+  }
+
+  broadcastTransaction(transaction) {
+    this.publish({
+      channel: CHANNELS.TRANSACTION,
+      message: JSON.stringify(transaction), // as only strings can be used as a message
     });
   }
 }
