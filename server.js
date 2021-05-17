@@ -7,12 +7,14 @@ const Blockchain = require('./blockchain');
 const PubSub = require('./app/pubsub');
 const TransactionPool = require('./wallet/transaction-pool');
 const Wallet = require('./wallet');
+const TransactionMiner = require('./app/transaction-miner');
 
 const app = express();
 const blockchain = new Blockchain();
 const wallet = new Wallet();
 const transactionPool = new TransactionPool();
-const pubSub = new PubSub(blockchain, transactionPool);
+const pubsub = new PubSub({ blockchain, transactionPool });
+const transactionMiner = new TransactionMiner({ blockchain, transactionPool, wallet, pubsub });
 app.use(express.json());
 
 const DEFAULT_PORT = 3000;
@@ -25,13 +27,13 @@ app.get('/api/blocks', (req, res) => {
   res.json(blockchain.chain);
 });
 
-// @desc Mine a new block
+// @desc Mine a new general block
 // @route POST/api/mine
 // @access Public(no token req)
 app.post('/api/mine', (req, res) => {
   const { data } = req.body;
   blockchain.addBlock({ data });
-  pubSub.broadcastChain(); // to broadcast whenever new block is mined
+  pubsub.broadcastChain(); // to broadcast whenever new block is mined
   res.redirect('/api/blocks');
 });
 
@@ -53,7 +55,7 @@ app.post('/api/transact', (req, res) => {
       transaction = wallet.createTransaction({ recipient, amount });
     }
     transactionPool.setTransaction(transaction);
-    pubSub.broadcastTransaction(transaction); // to broadcast whenever new transaction is done/updated
+    pubsub.broadcastTransaction(transaction); // to broadcast whenever new transaction is done/updated
     res.json({ type: 'success', transaction });
   } catch (err) {
     return res.status(400).json({ type: 'error', message: err.message });
@@ -65,6 +67,14 @@ app.post('/api/transact', (req, res) => {
 // @access Public(no token req)
 app.get('/api/transaction-pool-map', (req, res) => {
   res.json(transactionPool.transactionMap);
+});
+
+// @desc To add a block with transactions to the blockchain
+// @route GET/api/transaction-pool-map
+// @access Public(no token req)
+app.get('/api/mine-transactions', (req, res) => {
+  transactionMiner.mineTransactions();
+  res.redirect('/api/blocks');
 });
 
 // to check if there's already an existing chain then this function will be used to sync with it.

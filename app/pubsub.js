@@ -7,7 +7,7 @@ const CHANNELS = {
 };
 
 class PubSub {
-  constructor(blockchain, transactionPool) {
+  constructor({ blockchain, transactionPool }) {
     this.blockchain = blockchain;
     this.transactionPool = transactionPool;
 
@@ -18,9 +18,7 @@ class PubSub {
     this.subscribeToChannels();
 
     // here the subscriber will actually handle incoming messages -> like a listener function
-    this.subscriber.on('message', (channel, message) =>
-      this.handleMessage(channel, message)
-    );
+    this.subscriber.on('message', (channel, message) => this.handleMessage(channel, message));
   }
 
   handleMessage(channel, message) {
@@ -43,7 +41,7 @@ class PubSub {
 
   // will subsribe the current server.js instance to all the CHANNELS defined
   subscribeToChannels() {
-    Object.values(CHANNELS).forEach((channel) => {
+    Object.values(CHANNELS).forEach(channel => {
       this.subscriber.subscribe(channel);
     });
   }
