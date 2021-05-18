@@ -77,6 +77,18 @@ app.get('/api/mine-transactions', (req, res) => {
   res.redirect('/api/blocks');
 });
 
+// @desc To get the public address and the wallet's balance
+// @route GET/api/transaction-pool-map
+// @access Public(no token req)
+app.get('/api/wallet-info', (req, res) => {
+  const address = wallet.publicKey;
+
+  res.json({
+    address,
+    balance: Wallet.calculateBalance({ chain: blockchain.chain, address }),
+  });
+});
+
 // to check if there's already an existing chain then this function will be used to sync with it.
 // Eg. first npm run dev (root node) is done -> some blocks are mined -> npm run dev-peer is run, then at root node, chain will already be there.
 const syncWithRootState = () => {
