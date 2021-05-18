@@ -13,7 +13,7 @@ class Blockchain {
     this.chain.push(newBlock);
   }
 
-  replaceChain(newChain) {
+  replaceChain(newChain, onSuccess) {
     if (newChain.length <= this.chain.length) {
       console.error('The incoming chain must be longer');
       return;
@@ -24,6 +24,7 @@ class Blockchain {
       return;
     }
 
+    if (onSuccess) onSuccess();
     console.log('replacing chain with ', newChain);
     this.chain = newChain;
   }
@@ -42,13 +43,7 @@ class Blockchain {
 
       if (lastHash !== actualLastHash) return false;
 
-      const validatedHash = cryptoHash(
-        timestamp,
-        lastHash,
-        data,
-        nonce,
-        difficulty
-      );
+      const validatedHash = cryptoHash(timestamp, lastHash, data, nonce, difficulty);
       if (hash !== validatedHash) return false;
       if (Math.abs(lastDifficulty - difficulty) > 1) return false; // to prevent large difficulty jumps when new block is mined(added)
     }

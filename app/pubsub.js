@@ -1,5 +1,6 @@
 // to make multiple running processes to communicate over Channels
 const redis = require('redis');
+
 const CHANNELS = {
   TEST: 'TEST',
   BLOCKCHAIN: 'BLOCKCHAIN',
@@ -28,14 +29,17 @@ class PubSub {
 
     switch (channel) {
       case CHANNELS.BLOCKCHAIN:
-        this.blockchain.replaceChain(parsedMessage);
+        this.blockchain.replaceChain(parsedMessage, () => {
+          this.transactionPool.clearBlockchainTransactions({
+            chain: parsedMessage,
+          });
+        });
         break;
-
       case CHANNELS.TRANSACTION:
         this.transactionPool.setTransaction(parsedMessage);
         break;
       default:
-        break;
+        return;
     }
   }
 
@@ -47,11 +51,11 @@ class PubSub {
   }
 
   // just a wrapper so that doesn't depend on the order of parameters
+  // 3 step process is used below to avoid sending the publish msg to itself, so temporarily unsubscribing from the channel, sending the msg, then resubs.
   publish({ channel, message }) {
-    // 3 step process is used below to avoid sending the publish msg to itself, so temporarily unsubscribing from the channel, sending the msg, then resubs.
     this.subscriber.unsubscribe(channel, () => {
       this.publisher.publish(channel, message, () => {
-        this.publisher.subscribe(channel);
+        this.subscriber.subscribe(channel);
       });
     });
   }
