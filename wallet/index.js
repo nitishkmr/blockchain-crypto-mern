@@ -27,6 +27,22 @@ class Wallet {
     // console.log(tx);
     return tx;
   }
+
+  // to do the starting balance check, checks the output maps of txs and if any amount is desginated, then adds to the STARTING_BALANCE
+  static calculateBalance({ chain, address }) {
+    let outputsTotal = 0;
+    for (let i = 1; i < chain.length; i++) {
+      const block = chain[i];
+      for (let transaction of block.data) {
+        const addressOutput = transaction.outputMap[address];
+
+        if (addressOutput) {
+          outputsTotal = outputsTotal + addressOutput;
+        }
+      }
+    }
+    return STARTING_BALANCE + outputsTotal;
+  }
 }
 
 module.exports = Wallet;
