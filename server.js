@@ -52,7 +52,7 @@ app.post('/api/transact', (req, res) => {
       // just update, if already a transaction from the sender is in the pool.
       transaction.update({ senderWallet: wallet, recipientKey: recipient, amount }); // for the whole app, recipientKey===recipient
     } else {
-      transaction = wallet.createTransaction({ recipient, amount });
+      transaction = wallet.createTransaction({ recipient, amount, chain: blockchain.chain });
     }
     transactionPool.setTransaction(transaction);
     pubsub.broadcastTransaction(transaction); // to broadcast whenever new transaction is done/updated
