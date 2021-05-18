@@ -16,7 +16,7 @@ const transactionPool = new TransactionPool();
 const pubsub = new PubSub({ blockchain, transactionPool });
 const transactionMiner = new TransactionMiner({ blockchain, transactionPool, wallet, pubsub });
 app.use(express.json());
-
+app.use(express.static(__dirname + '/client')); // to also send other files like js scripts also to the frontend, or else only the index.html would've been served
 const DEFAULT_PORT = 3000;
 const ROOT_NODE_ADDRESS = `http://localhost:${DEFAULT_PORT}`;
 
@@ -87,6 +87,11 @@ app.get('/api/wallet-info', (req, res) => {
     address,
     balance: Wallet.calculateBalance({ chain: blockchain.chain, address }),
   });
+});
+
+// @desc To serve any endpoints other than the above ones
+app.get('*', (req, res) => {
+  res.sendFile(__dirname + '/client/index.html');
 });
 
 // to check if there's already an existing chain then this function will be used to sync with it.

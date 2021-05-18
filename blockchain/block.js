@@ -18,6 +18,7 @@ class Block {
     return new Block(GENESIS_DATA);
   }
 
+  // Mining - to do that proof of work - do CPU work to find hashes acc to the difficulty
   static mineBlock({ lastBlock, data }) {
     const lastHash = lastBlock.hash;
     let hash, timestamp;
@@ -33,9 +34,7 @@ class Block {
         newBlockTimestamp: timestamp,
       });
       hash = cryptoHash(timestamp, lastHash, data, nonce, difficulty);
-    } while (
-      hexToBinary(hash).substring(0, difficulty) !== '0'.repeat(difficulty)
-    );
+    } while (hexToBinary(hash).substring(0, difficulty) !== '0'.repeat(difficulty));
 
     return new this({
       timestamp, // timestamp: timestamp
