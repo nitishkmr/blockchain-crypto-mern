@@ -87,7 +87,7 @@ describe('Wallet', () => {
       blockchain = new Blockchain();
     });
 
-    describe('and there are no outputs for the wallet', () => {
+    describe('and there are no outputs in the map for the wallet', () => {
       it('returns the `STARTING_BALANCE`', () => {
         expect(
           Wallet.calculateBalance({
@@ -122,6 +122,65 @@ describe('Wallet', () => {
             address: wallet.publicKey,
           })
         ).toEqual(STARTING_BALANCE + transactionOne.outputMap[wallet.publicKey] + transactionTwo.outputMap[wallet.publicKey]);
+      });
+
+      describe('and the wallet has made a transaction', () => {
+        let recentTransaction;
+
+        beforeEach(() => {
+          recentTransaction = wallet.createTransaction({
+            recipient: 'foo-address',
+            amount: 30,
+          });
+
+          blockchain.addBlock({ data: [recentTransaction] });
+        });
+
+        it('returns the balance after the recent transaction', () => {
+          expect(
+            Wallet.calculateBalance({
+              chain: blockchain.chain,
+              address: wallet.publicKey,
+            })
+          ).toEqual(recentTransaction.outputMap[wallet.publicKey]);
+        });
+
+        describe('and there are outputs(more txs) next to and after the recent transaction', () => {
+          let sameBlockTransaction, nextBlockTransaction;
+
+          beforeEach(() => {
+            recentTransaction = wallet.createTransaction({
+              recipientKey: 'later-foo-address',
+              amount: 60,
+            });
+
+            // only miner wallet can do transactions on same block, so considering the current wallet to be a miner wallet
+            sameBlockTransaction = Transaction.rewardTransaction({ minerWallet: wallet });
+
+            blockchain.addBlock({ data: [recentTransaction, sameBlockTransaction] });
+
+            // recipient is the main wallet, it should be able to receive a tx after a tx is made from it.
+            nextBlockTransaction = new Wallet().createTransaction({
+              recipient: wallet.publicKey,
+              amount: 75,
+            });
+
+            blockchain.addBlock({ data: [nextBlockTransaction] });
+          });
+
+          it('includes the output amounts in the returned balance', () => {
+            expect(
+              Wallet.calculateBalance({
+                chain: blockchain.chain,
+                address: wallet.publicKey,
+              })
+            ).toEqual(
+              recentTransaction.outputMap[wallet.publicKey] +
+                sameBlockTransaction.outputMap[wallet.publicKey] +
+                nextBlockTransaction.outputMap[wallet.publicKey]
+            );
+          });
+        });
       });
     });
   });
