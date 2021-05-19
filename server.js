@@ -9,6 +9,10 @@ const TransactionPool = require('./wallet/transaction-pool');
 const Wallet = require('./wallet');
 const TransactionMiner = require('./app/transaction-miner');
 
+const isDevelopment = process.env.ENV === 'development';
+const DEFAULT_PORT = 3000;
+const ROOT_NODE_ADDRESS = `http://localhost:${DEFAULT_PORT}`;
+
 const app = express();
 const blockchain = new Blockchain();
 const wallet = new Wallet();
@@ -17,8 +21,6 @@ const pubsub = new PubSub({ blockchain, transactionPool, wallet });
 const transactionMiner = new TransactionMiner({ blockchain, transactionPool, wallet, pubsub });
 app.use(express.json());
 app.use(express.static(__dirname + '/client/dist')); // to also send other files like js scripts also to the frontend, or else only the index.html would've been served
-const DEFAULT_PORT = 3000;
-const ROOT_NODE_ADDRESS = `http://localhost:${DEFAULT_PORT}`;
 
 // @desc Fetch the chain
 // @route GET/api/blocks
@@ -116,6 +118,7 @@ const syncWithRootState = () => {
 };
 
 // SEEDING INITIAL DATA
+// if (isDevelopment) {
 const walletFoo = new Wallet();
 const walletBar = new Wallet();
 const generateWalletTransaction = ({ wallet, recipient, amount }) => {
@@ -148,6 +151,7 @@ for (let i = 0; i < 10; i++) {
   }
   transactionMiner.mineTransactions();
 }
+// }
 
 // here multiple ports are needed to different blockchain servers/channels can be run simultaneously
 let PEER_PORT;
@@ -158,7 +162,7 @@ if (process.env.GENERATE_PEER_PORT === 'true') {
   PEER_PORT = DEFAULT_PORT + Math.ceil(Math.random() * 1000);
 }
 
-const PORT = PEER_PORT || DEFAULT_PORT;
+const PORT = process.env.PORT || PEER_PORT || DEFAULT_PORT;
 app.listen(PORT, () => {
   console.log(`Server running on PORT ${PORT}`);
 
