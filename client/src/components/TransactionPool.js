@@ -70,7 +70,7 @@ class TransactionPool extends Component {
         <h3>Transaction Pool</h3>
         <hr className="light" />
         {this.getPool()}
-        <Button variant="danger" onClick={this.fetchMineTransations}>
+        <Button bsStyle="danger" onClick={this.fetchMineTransations}>
           Mine the Transactions
         </Button>
       </div>

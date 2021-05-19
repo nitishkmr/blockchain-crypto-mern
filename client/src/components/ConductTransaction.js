@@ -55,7 +55,7 @@ class ConductTransaction extends Component {
           />
         </FormGroup>
         <div>
-          <Button variant="danger" onClick={this.ConductTransaction}>
+          <Button bsStyle="danger" onClick={this.ConductTransaction}>
             Submit
           </Button>
         </div>
