@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import Blocks from './Blocks';
+import crypto3 from '../assets/crypto3.png';
 
 class App extends Component {
   state = { walletInfo: {} }; // will get wallet info from the backend
@@ -14,10 +15,15 @@ class App extends Component {
   render() {
     const { address, balance } = this.state.walletInfo;
     return (
-      <div>
+      <div className="App">
+        <img className="logo" src={crypto3} />
+        <br />
         <div>Welcome to the Blockchain!</div>
-        <div>Address: {address}</div>
-        <div>Balance: {balance}</div>
+        <br />
+        <div className="walletInfo">
+          <div>Address: {address}</div>
+          <div>Balance: {balance}</div>
+        </div>
         <br />
         <Blocks />
       </div>
