@@ -2,20 +2,26 @@ import React, { Component } from 'react';
 import Transaction from './Transaction';
 import { Link } from 'react-router-dom';
 
+const POLL_INTERVAL_MS = 5000;
+
 class TransactionPool extends Component {
   state = { transactionPoolMap: {} }; // will take the poolMap from the transaction pool map endpoint (backend)
 
   fetchTransactionPoolMap = () => {
-    fetch('http://localhost:3000/api/transaction-pool-map')
+    fetch(`${document.location.origin}/api/transaction-pool-map`)
       .then(response => response.json())
       .then(json => this.setState({ transactionPoolMap: json }));
   };
 
   // since want to fetch the poolMap right away
   componentDidMount() {
-    console.log('didmount');
+    // console.log('didmount');
     this.fetchTransactionPoolMap();
-    this.forceUpdate();
+    this.fetchPoolMapInterval = setInterval(() => this.fetchTransactionPoolMap(), POLL_INTERVAL_MS);
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.fetchPoolMapInterval); // as even if different page is loaded, then also the setInterval keeps on going
   }
 
   getPool() {
