@@ -118,40 +118,40 @@ const syncWithRootState = () => {
 };
 
 // SEEDING INITIAL DATA
-if (isDevelopment) {
-  const walletFoo = new Wallet();
-  const walletBar = new Wallet();
-  const generateWalletTransaction = ({ wallet, recipient, amount }) => {
-    const transaction = wallet.createTransaction({ recipient, amount, chain: blockchain.chain });
+// if (isDevelopment) {
+const walletFoo = new Wallet();
+const walletBar = new Wallet();
+const generateWalletTransaction = ({ wallet, recipient, amount }) => {
+  const transaction = wallet.createTransaction({ recipient, amount, chain: blockchain.chain });
 
-    transactionPool.setTransaction(transaction);
-  };
+  transactionPool.setTransaction(transaction);
+};
 
-  // tx from the root wallet to fooWallet
-  const walletAction = () => generateWalletTransaction({ wallet, recipient: walletFoo.publicKey, amount: 5 });
+// tx from the root wallet to fooWallet
+const walletAction = () => generateWalletTransaction({ wallet, recipient: walletFoo.publicKey, amount: 5 });
 
-  // tx from fooWallet to barWallet
-  const walletFooAction = () =>
-    generateWalletTransaction({ wallet: walletFoo, recipient: walletBar.publicKey, amount: 10 });
+// tx from fooWallet to barWallet
+const walletFooAction = () =>
+  generateWalletTransaction({ wallet: walletFoo, recipient: walletBar.publicKey, amount: 10 });
 
-  // tx from barWallet to root wallet
-  const walletBarAction = () =>
-    generateWalletTransaction({ wallet: walletBar, recipient: wallet.publicKey, amount: 50 });
+// tx from barWallet to root wallet
+const walletBarAction = () =>
+  generateWalletTransaction({ wallet: walletBar, recipient: wallet.publicKey, amount: 50 });
 
-  for (let i = 0; i < 10; i++) {
-    if (i % 3 === 0) {
-      walletAction();
-      walletFooAction();
-    } else if (i % 3 === 1) {
-      walletAction();
-      walletBarAction();
-    } else {
-      walletFooAction();
-      walletBarAction();
-    }
-    transactionMiner.mineTransactions();
+for (let i = 0; i < 10; i++) {
+  if (i % 3 === 0) {
+    walletAction();
+    walletFooAction();
+  } else if (i % 3 === 1) {
+    walletAction();
+    walletBarAction();
+  } else {
+    walletFooAction();
+    walletBarAction();
   }
+  transactionMiner.mineTransactions();
 }
+// }
 
 // here multiple ports are needed to different blockchain servers/channels can be run simultaneously
 let PEER_PORT;
