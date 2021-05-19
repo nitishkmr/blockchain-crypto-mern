@@ -9,8 +9,12 @@ body {
   word-wrap: break-word;
 }
 
-hr {
-  border-top: 1px solid #114e60;
+hr.dark {
+  border-top: 2px solid #114e60;
+}
+
+hr.light {
+  border-top: 2px solid #f4eee8;
 }
 
 .logo {
@@ -46,7 +50,8 @@ hr {
   padding: 5%;
 }
 
-.ConductTransaction {
+.ConductTransaction,
+.TransactionPool {
   margin: 10%;
 }
 
@@ -67,7 +72,8 @@ hr {
 .toast {
   position: fixed;
   top: 20px;
-  left: 46.5%;
-  right: auto;
+  left: 0;
+  /* right: auto; */
   text-align: center;
+  color: #114e60;
 }

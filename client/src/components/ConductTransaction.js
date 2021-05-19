@@ -24,7 +24,8 @@ class ConductTransaction extends Component {
     })
       .then(response => response.json())
       .then(json => {
-        new Toast(json.message || json.type, Toast.TYPE_DONE, 2000);
+        new Toast(json.message || json.type, Toast.TYPE_MESSAGE, 2000);
+        this.props.history.push('/transaction-pool');
       });
   };
 
@@ -35,6 +36,7 @@ class ConductTransaction extends Component {
           Home
         </Link>
         <h3>Conduct a Transaction</h3>
+        <hr className="light" />
         {/* One formgroup for Recipient and one for amount*/}
         <FormGroup>
           <FormControl
@@ -53,7 +55,7 @@ class ConductTransaction extends Component {
           />
         </FormGroup>
         <div>
-          <Button bsStyle="danger" onClick={this.ConductTransaction}>
+          <Button variant="danger" onClick={this.ConductTransaction}>
             Submit
           </Button>
         </div>

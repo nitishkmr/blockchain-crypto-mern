@@ -14,7 +14,8 @@ class Block extends Component {
     const { data } = this.props.block;
 
     const stringifiedData = JSON.stringify(data);
-    const dataDisplay = stringifiedData.length > 15 ? `${stringifiedData.substring(0, 35)}...` : stringifiedData;
+    const dataDisplay =
+      stringifiedData.length > 15 ? `${stringifiedData.substring(0, 35)}...` : stringifiedData;
 
     if (this.state.displayTransaction) {
       // to print full info
@@ -22,12 +23,12 @@ class Block extends Component {
         <div>
           {data.map(transaction => (
             <div key={transaction.id}>
-              <hr />
+              <hr className="dark" />
               <Transaction transaction={transaction} />
             </div>
           ))}
           <br />
-          <Button bsStyle="danger" bsSize="small" onClick={this.toggleTransaction}>
+          <Button variant="danger" bsSize="small" onClick={this.toggleTransaction}>
             Show Less
           </Button>
         </div>
@@ -37,7 +38,7 @@ class Block extends Component {
     return (
       <div>
         <div>Data: {dataDisplay}</div>
-        <Button bsStyle="danger" bsSize="small" onClick={this.toggleTransaction}>
+        <Button bsSize="small" onClick={this.toggleTransaction}>
           Show More
         </Button>
       </div>

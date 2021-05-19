@@ -1,5 +1,6 @@
 import React from 'react';
 
+// Transactions can be shown from the Blocks also as well as TransactionPool also
 const Transaction = ({ transaction }) => {
   const { input, outputMap } = transaction;
   const recipients = Object.keys(outputMap);

@@ -17,18 +17,20 @@ class App extends Component {
     return (
       <div className="App">
         <img className="logo" src={crypto3} />
-        <br />
-        <div>Welcome to the Blockchain!</div>
+        <h3>Welcome to the Blockchain!</h3>
         <Link className="link" to="/blocks">
           Blocks
         </Link>
         <Link className="link" to="/conduct-transaction">
           Conduct a Transaction
         </Link>
+        <Link className="link" to="/transaction-pool">
+          Transaction Pool
+        </Link>
         <br />
         <div className="walletInfo">
-          <div>Address: {address}</div>
-          <div>Balance: {balance}</div>
+          <div>My Address: {address}</div>
+          <div>My Balance: {balance}</div>
         </div>
       </div>
     );
