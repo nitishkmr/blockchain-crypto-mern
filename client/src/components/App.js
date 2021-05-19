@@ -22,6 +22,9 @@ class App extends Component {
         <Link className="link" to="/blocks">
           Blocks
         </Link>
+        <Link className="link" to="/conduct-transaction">
+          Conduct a Transaction
+        </Link>
         <br />
         <div className="walletInfo">
           <div>Address: {address}</div>

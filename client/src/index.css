@@ -46,17 +46,28 @@ hr {
   padding: 5%;
 }
 
+.ConductTransaction {
+  margin: 10%;
+}
+
 .link {
   border: 1px solid rgb(255, 204, 0);
-  margin: 10px;
+  margin: 5px;
   border-radius: 50px;
   color: rgb(255, 204, 0);
   text-decoration: none;
   padding: 5px 20px;
-  font-size: larger;
+  font-size: large;
 }
 .link:hover {
   color: #114e60;
   background-color: rgb(255, 204, 0);
   text-decoration: none;
+}
+.toast {
+  position: fixed;
+  top: 20px;
+  left: 46.5%;
+  right: auto;
+  text-align: center;
 }
