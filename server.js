@@ -13,7 +13,7 @@ const app = express();
 const blockchain = new Blockchain();
 const wallet = new Wallet();
 const transactionPool = new TransactionPool();
-const pubsub = new PubSub({ blockchain, transactionPool });
+const pubsub = new PubSub({ blockchain, transactionPool, wallet });
 const transactionMiner = new TransactionMiner({ blockchain, transactionPool, wallet, pubsub });
 app.use(express.json());
 app.use(express.static(__dirname + '/client/dist')); // to also send other files like js scripts also to the frontend, or else only the index.html would've been served
@@ -128,10 +128,12 @@ const generateWalletTransaction = ({ wallet, recipient, amount }) => {
 const walletAction = () => generateWalletTransaction({ wallet, recipient: walletFoo.publicKey, amount: 5 });
 
 // tx from fooWallet to barWallet
-const walletFooAction = () => generateWalletTransaction({ wallet: walletFoo, recipient: walletBar.publicKey, amount: 10 });
+const walletFooAction = () =>
+  generateWalletTransaction({ wallet: walletFoo, recipient: walletBar.publicKey, amount: 10 });
 
 // tx from barWallet to root wallet
-const walletBarAction = () => generateWalletTransaction({ wallet: walletBar, recipient: wallet.publicKey, amount: 50 });
+const walletBarAction = () =>
+  generateWalletTransaction({ wallet: walletBar, recipient: wallet.publicKey, amount: 50 });
 
 for (let i = 0; i < 10; i++) {
   if (i % 3 === 0) {
@@ -152,6 +154,7 @@ let PEER_PORT;
 
 if (process.env.GENERATE_PEER_PORT === 'true') {
   // will be run if instead of npm run dev, npm run dev-peer is used
+  // PEER_PORT = 3001;
   PEER_PORT = DEFAULT_PORT + Math.ceil(Math.random() * 1000);
 }
 

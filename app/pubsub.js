@@ -1,5 +1,10 @@
-// to make multiple running processes to communicate over Channels
-const redis = require('redis');
+const PubNub = require('pubnub');
+
+const credentials = {
+  publishKey: 'pub-c-ba19755c-4553-466f-9ff1-6c8a352200b2',
+  subscribeKey: 'sub-c-b8699216-b8b7-11eb-b0a0-0e040bede276',
+  secretKey: 'sec-c-NDdkYTI2NmYtYzU4Ny00MGE1LThlZjAtNTMyZGUwMTI4YzI3',
+};
 
 const CHANNELS = {
   TEST: 'TEST',
@@ -8,80 +13,83 @@ const CHANNELS = {
 };
 
 class PubSub {
-  constructor({ blockchain, transactionPool }) {
+  constructor({ blockchain, transactionPool, wallet }) {
     this.blockchain = blockchain;
     this.transactionPool = transactionPool;
+    this.wallet = wallet;
 
-    this.publisher = redis.createClient();
-    this.subscriber = redis.createClient();
+    this.pubnub = new PubNub(credentials);
 
-    // here, the subscriber will be subscribed to all the channels
-    this.subscribeToChannels();
+    this.pubnub.subscribe({ channels: [Object.values(CHANNELS)] });
 
-    // here the subscriber will actually handle incoming messages -> like a listener function
-    this.subscriber.on('message', (channel, message) => this.handleMessage(channel, message));
-  }
-
-  handleMessage(channel, message) {
-    console.log(`Message received. Channel: ${channel}. Message: ${message}.`);
-
-    const parsedMessage = JSON.parse(message);
-
-    switch (channel) {
-      case CHANNELS.BLOCKCHAIN:
-        this.blockchain.replaceChain(parsedMessage, true, () => {
-          this.transactionPool.clearBlockchainTransactions({
-            chain: parsedMessage,
-          });
-        });
-        break;
-      case CHANNELS.TRANSACTION:
-        this.transactionPool.setTransaction(parsedMessage);
-        break;
-      default:
-        return;
-    }
-  }
-
-  // will subsribe the current server.js instance to all the CHANNELS defined
-  subscribeToChannels() {
-    Object.values(CHANNELS).forEach(channel => {
-      this.subscriber.subscribe(channel);
-    });
-  }
-
-  // just a wrapper so that doesn't depend on the order of parameters
-  // 3 step process is used below to avoid sending the publish msg to itself, so temporarily unsubscribing from the channel, sending the msg, then resubs.
-  publish({ channel, message }) {
-    this.subscriber.unsubscribe(channel, () => {
-      this.publisher.publish(channel, message, () => {
-        this.subscriber.subscribe(channel);
-      });
-    });
+    this.pubnub.addListener(this.listener());
   }
 
   broadcastChain() {
     this.publish({
       channel: CHANNELS.BLOCKCHAIN,
-      message: JSON.stringify(this.blockchain.chain), // as only strings can be used as a message
+      message: JSON.stringify(this.blockchain.chain),
     });
   }
 
   broadcastTransaction(transaction) {
     this.publish({
       channel: CHANNELS.TRANSACTION,
-      message: JSON.stringify(transaction), // as only strings can be used as a message
+      message: JSON.stringify(transaction),
+    });
+  }
+
+  listener() {
+    return {
+      message: messageObject => {
+        const { channel, message } = messageObject;
+
+        console.log(`Message received. Channel: ${channel}. Message: ${message.substring(0, 20)}`);
+        const parsedMessage = JSON.parse(message);
+
+        switch (channel) {
+          case CHANNELS.BLOCKCHAIN:
+            this.blockchain.replaceChain(parsedMessage, true, () => {
+              this.transactionPool.clearBlockchainTransactions({ chain: parsedMessage });
+            });
+            break;
+          case CHANNELS.TRANSACTION:
+            if (
+              !this.transactionPool.existingTransaction({
+                inputAddress: this.wallet.publicKey,
+              })
+            ) {
+              this.transactionPool.setTransaction(parsedMessage);
+            }
+            break;
+
+          default:
+            return;
+        }
+      },
+    };
+  }
+
+  publish({ channel, message }) {
+    // there is an unsubscribe function in pubnub
+    // but it doesn't have a callback that fires after success
+    // therefore, redundant publishes to the same local subscriber will be accepted as noisy no-ops
+    this.pubnub.publish({ message, channel });
+  }
+
+  broadcastChain() {
+    this.publish({
+      channel: CHANNELS.BLOCKCHAIN,
+      message: JSON.stringify(this.blockchain.chain),
+    });
+  }
+
+  broadcastTransaction(transaction) {
+    this.publish({
+      channel: CHANNELS.TRANSACTION,
+      message: JSON.stringify(transaction),
     });
   }
 }
-
-// const testPubSub = new PubSub();
-
-// Different from subscribing functions, this one is used to publish something on the CHANNEL, at the same time, all those instances which are connected to the same channel will receive the 'foo' once this file is loaded - node pubsub.js
-// Also, since the subscribing function is also in the same file so this itself will also receive the 'foo' message.
-
-// setTimeout(() => testPubSub.publisher.publish(CHANNELS.TEST, 'foo'), 1000);
-
-// here setTimeout() is used since the subscribing functions defined above are async, so it may happen that the 'publishing' is done before those functions are registered.
 
 module.exports = PubSub;

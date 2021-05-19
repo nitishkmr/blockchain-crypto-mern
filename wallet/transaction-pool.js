@@ -6,6 +6,7 @@ class TransactionPool {
   }
 
   clear() {
+    console.log('CLEAR');
     this.transactionMap = {};
   }
 
