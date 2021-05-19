@@ -119,7 +119,7 @@ const syncWithRootState = () => {
 const walletFoo = new Wallet();
 const walletBar = new Wallet();
 const generateWalletTransaction = ({ wallet, recipient, amount }) => {
-  const transaction = wallet.createTransaction({ recipientKey: recipient, amount, chain: blockchain.chain });
+  const transaction = wallet.createTransaction({ recipient, amount, chain: blockchain.chain });
 
   transactionPool.setTransaction(transaction);
 };

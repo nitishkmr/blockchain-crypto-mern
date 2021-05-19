@@ -57,13 +57,4 @@ class Block {
   }
 }
 
-// const block1 = new Block({
-//   data: 'data',
-//   timestamp: '01/01/01',
-//   lastHash: 'foo-lastHash',
-//   hash: 'foo-hash',
-// }); //cannot be reassigned
-
-// console.log(block1);
-
 module.exports = Block;

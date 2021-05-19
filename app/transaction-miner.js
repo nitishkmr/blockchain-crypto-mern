@@ -20,8 +20,6 @@ class TransactionMiner {
     this.blockchain.addBlock({ data: validTransactions });
 
     // broadcast the updated blockchain
-
-    // console.log('---------BROADCAST----------');
     this.pubsub.broadcastChain();
 
     // clear the pool (mined txs)
