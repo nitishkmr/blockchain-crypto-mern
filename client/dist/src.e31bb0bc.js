@@ -51737,9 +51737,13 @@ exports.default = void 0;
 
 var _react = _interopRequireWildcard(require("react"));
 
+var _reactBootstrap = require("react-bootstrap");
+
 var _Transaction = _interopRequireDefault(require("./Transaction"));
 
 var _reactRouterDom = require("react-router-dom");
+
+var _toasterJs = require("toaster-js");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -51803,6 +51807,18 @@ var TransactionPool = /*#__PURE__*/function (_Component) {
       });
     });
 
+    _defineProperty(_assertThisInitialized(_this), "fetchMineTransations", function () {
+      fetch("".concat(document.location.origin, "/api/mine-transactions")).then(function (response) {
+        if (response.status === 200) {
+          new _toasterJs.Toast('Success', _toasterJs.Toast.TYPE_DONE, 2000);
+
+          _this.props.history.push('/blocks');
+        } else {
+          new _toasterJs.Toast('The mine-transactions block request did not complete', _toasterJs.Toast.TYPE_ERROR, 2000);
+        }
+      });
+    });
+
     return _this;
   }
 
@@ -51857,7 +51873,10 @@ var TransactionPool = /*#__PURE__*/function (_Component) {
         to: "/"
       }, "Home"), /*#__PURE__*/_react.default.createElement("h3", null, "Transaction Pool"), /*#__PURE__*/_react.default.createElement("hr", {
         className: "light"
-      }), this.getPool());
+      }), this.getPool(), /*#__PURE__*/_react.default.createElement(_reactBootstrap.Button, {
+        variant: "danger",
+        onClick: this.fetchMineTransations
+      }, "Mine the Transactions"));
     }
   }]);
 
@@ -51866,7 +51885,7 @@ var TransactionPool = /*#__PURE__*/function (_Component) {
 
 var _default = TransactionPool;
 exports.default = _default;
-},{"react":"../../node_modules/react/index.js","./Transaction":"components/Transaction.js","react-router-dom":"../../node_modules/react-router-dom/esm/react-router-dom.js"}],"index.css":[function(require,module,exports) {
+},{"react":"../../node_modules/react/index.js","react-bootstrap":"../../node_modules/react-bootstrap/esm/index.js","./Transaction":"components/Transaction.js","react-router-dom":"../../node_modules/react-router-dom/esm/react-router-dom.js","toaster-js":"../../node_modules/toaster-js/index.js"}],"index.css":[function(require,module,exports) {
 var reloadCSS = require('_css_loader');
 
 module.hot.dispose(reloadCSS);

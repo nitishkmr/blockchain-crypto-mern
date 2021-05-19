@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
+import { Button } from 'react-bootstrap';
 import Transaction from './Transaction';
 import { Link } from 'react-router-dom';
+import { Toast } from 'toaster-js';
 
 const POLL_INTERVAL_MS = 5000;
 
@@ -11,6 +13,17 @@ class TransactionPool extends Component {
     fetch(`${document.location.origin}/api/transaction-pool-map`)
       .then(response => response.json())
       .then(json => this.setState({ transactionPoolMap: json }));
+  };
+
+  fetchMineTransations = () => {
+    fetch(`${document.location.origin}/api/mine-transactions`).then(response => {
+      if (response.status === 200) {
+        new Toast('Success', Toast.TYPE_DONE, 2000);
+        this.props.history.push('/blocks');
+      } else {
+        new Toast('The mine-transactions block request did not complete', Toast.TYPE_ERROR, 2000);
+      }
+    });
   };
 
   // since want to fetch the poolMap right away
@@ -57,6 +70,9 @@ class TransactionPool extends Component {
         <h3>Transaction Pool</h3>
         <hr className="light" />
         {this.getPool()}
+        <Button variant="danger" onClick={this.fetchMineTransations}>
+          Mine the Transactions
+        </Button>
       </div>
     );
   }
